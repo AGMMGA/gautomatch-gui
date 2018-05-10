@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1130</width>
-    <height>961</height>
+    <width>800</width>
+    <height>243</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -46,7 +46,7 @@
       </widget>
      </item>
      <item row="1" column="2">
-      <widget class="QPushButton" name="templateBrowseButton">
+      <widget class="QPushButton" name="templatesBrowseButton">
        <property name="text">
         <string>Browse...</string>
        </property>
@@ -82,11 +82,15 @@
      <item row="1" column="4">
       <widget class="QDoubleSpinBox" name="aPixTBox"/>
      </item>
-     <item row="3" column="4">
-      <widget class="QDoubleSpinBox" name="diameterBox"/>
-     </item>
      <item row="0" column="4">
       <widget class="QDoubleSpinBox" name="aPixMBox"/>
+     </item>
+     <item row="3" column="4">
+      <widget class="QSpinBox" name="diameterBox">
+       <property name="maximum">
+        <number>1000</number>
+       </property>
+      </widget>
      </item>
     </layout>
    </widget>
@@ -112,52 +116,40 @@
       <height>641</height>
      </rect>
     </property>
-   </widget>
-   <widget class="QWidget" name="horizontalLayoutWidget">
-    <property name="geometry">
-     <rect>
-      <x>0</x>
-      <y>830</y>
-      <width>301</width>
-      <height>41</height>
-     </rect>
-    </property>
-    <layout class="QHBoxLayout" name="horizontalLayout">
-     <item>
-      <widget class="QPushButton" name="quitButton">
-       <property name="text">
-        <string>Quit</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="runButton">
-       <property name="text">
-        <string>Run</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QPushButton" name="resetButton">
-       <property name="text">
-        <string>Reset</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="geometry">
+      <rect>
+       <x>0</x>
+       <y>0</y>
+       <width>271</width>
+       <height>23</height>
+      </rect>
+     </property>
+     <property name="sizePolicy">
+      <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+       <horstretch>0</horstretch>
+       <verstretch>0</verstretch>
+      </sizepolicy>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::Cancel|QDialogButtonBox::RestoreDefaults</set>
+     </property>
+     <property name="centerButtons">
+      <bool>true</bool>
+     </property>
+    </widget>
    </widget>
    <zorder>gridLayoutWidget</zorder>
    <zorder>basicOptionsLabel</zorder>
    <zorder>basicOptionsLabel</zorder>
    <zorder>micrographWidget</zorder>
-   <zorder>horizontalLayoutWidget</zorder>
   </widget>
   <widget class="QMenuBar" name="menubar">
    <property name="geometry">
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1130</width>
+     <width>800</width>
      <height>21</height>
     </rect>
    </property>
