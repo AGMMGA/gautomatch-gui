@@ -56,12 +56,14 @@ class Main_window( Ui_MainWindow, QMainWindow):
             title = 'Open micrographs for picking'
             filters = 'Micrographs (*.mrc);;All files (*.*)'
         self.browse_dialog = QFileDialog()
+        self.browse_dialog.setParent(self)
         self.browse_dialog.setFileMode(QFileDialog.ExistingFile)
         self.browse_dialog.setWindowTitle(title)
         self.browse_dialog.setDirectory(os.getcwd()),
         self.browse_dialog.setNameFilter(filters)
-        self.browse_dialog.show()
+        self.browse_dialog.exec_()
         selected = self.browse_dialog.selectedFiles()
+        print(selected)
         if selected:
             target.setText(selected[0])
         return
