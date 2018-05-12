@@ -1,24 +1,69 @@
 # -*- coding: utf-8 -*-
+import os
+import glob
 
-class InvalidParameters(ValueError):
+class InvalidParameter(Exception):
+
+    def __init__(self, msg, informative_text=None):
+        self.informative_text = informative_text
+        self.msg = msg
+        
+    def __str__(self):
+        return self.msg
+    
+class MicrographNotFound(InvalidParameter):
     pass
 
-class gautomatch_runner(object):
+class TemplateNotFound(InvalidParameter):
+    pass
+
+class NoMicrographsChosen(InvalidParameter):
+    pass
+
+class Gautomatch_runner(object):
     
     def __init__(self):
         super().__init__()
     
-    def run(self, exp):
-        check = self.check_parameters(exp)
-        if check == 1:
-            coordinates = self.do_stuff(exp)
-            return coordinates
-        else:
-            raise InvalidParameters(check)
+    def run(self, parameters):
+        self.check_parameters(parameters) #raises appropriate exceptions
+        coordinates = self.do_stuff(parameters)
+        return coordinates
     
-    def check_parameters(self):
+    def check_parameters(self, parameters):
         '''
         checks that the exp passed to gautomatch are sensible
         returns 1 for success, an error message for failure
         '''
-        return 0
+        #check micrographs are given as input
+        if not parameters['micrographs']:
+            msg = 'No micrographs selected'
+            t = 'Please select one or more micrographs to process'
+            raise NoMicrographsChosen(msg, informative_text=t)
+        #check micrographs exists
+        if not glob.glob(parameters['micrographs']):
+            msg = ('The micrograph {} does not exist'.format(
+                                                    parameters['micrographs']))
+            raise MicrographNotFound(msg)
+        #check templates exist if given as input
+        if parameters['templates'] and not glob.glob(parameters['templates']):
+            msg = ('The template {} does not exist'.format(
+                                                    parameters['templates']))
+            raise TemplateNotFound(msg)
+        #apixM, apixT are >0 and type == float from GUI specifications
+        #diameter is >0 and type == int from GUI specifications
+        return 1
+        
+    def do_stuff(self, parameters):
+        pass
+    
+def main():
+    a = Gautomatch_runner()
+    import inspect
+    test_file = inspect.getfile(os)
+    parameters = {'micrographs': test_file,
+                    'templates':'dsv',}
+    a.run(parameters)
+
+if __name__ == '__main__':
+    main()
