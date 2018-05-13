@@ -21,45 +21,49 @@ class Test_get_and_set_parameters(unittest.TestCase):
         except RuntimeError:
             pass
     
-    def test_works_ok(self):
+    def test_setting_on_GUI(self):
         a = Main_window()
         a.aPixMBox.setValue(2.01)
         a.aPixTBox.setValue(3.01)
         a.templatesBox.setText(os.getcwd())
         a.micrographsBox.setText(os.getcwd())
         a.diameterBox.setValue(410)
-        exp = {}
+        exp = DEFAULT_PARAMETERS.copy()
         exp['apixM'] = 2.01
         exp['apixT'] = 3.01
         exp['diameter'] = 410
         exp['micrographs'] = os.getcwd()
         exp['templates'] = os.getcwd()
+        res = a.get_parameters()
+        self.assertTrue(self.dicts_are_equal_for_common_keys(res, exp, diff=True))
+    
+    def dicts_are_equal_for_common_keys(self, dict1, dict2, diff=False):
+        all_keys = set([k for k in dict1.keys()] + \
+                    [k for k in dict2.keys()])
+        common_keys = [k for k in all_keys 
+                       if k in dict1.keys()
+                       if k in dict2.keys()]
+        equal = [k for k in common_keys if dict1[k] == dict2[k]]
+        different = [k for k in common_keys if dict1[k] != dict2[k]]
+        if not different:
+            return True
+        elif different and diff:
+            for k in different:
+                print (f'Key: {k}. Dict1 = {dict1[k]} != Dict2 = {dict2[k]}')
+                return False
         
-        self.assertEqual(a.get_parameters(), exp)
-        self.assertEqual(type(exp['apixM']), type(1.00))
-        self.assertEqual(type(exp['apixT']), type(1.00))
-        self.assertEqual(type(exp['diameter']), type(1))
-        
-    def test_empty_state(self):
+    def test_default_state(self):
         a = Main_window()
         res = a.get_parameters()
-        exp = {'apixM' : 0.0,
-               'apixT' : 0.0,
-               'diameter' : 0,
-               'micrographs' : '',
-               'templates' : ''}
-        self.assertEqual(res, exp)
+        exp = DEFAULT_PARAMETERS.copy()
+        self.assertTrue(self.dicts_are_equal_for_common_keys(res, exp, diff=True))
         
     def test_set_parameters(self):
         a = Main_window()
-        p = DEFAULT_PARAMETERS.copy()
-        a.set_parameters(p)
+        exp = DEFAULT_PARAMETERS.copy()
+        a.set_parameters(exp)
         res = a.get_parameters()
-        for k in p.copy().keys():
-            if k not in res:
-                del p[k]
-        assert(p.keys() == res.keys())
-        self.assertEqual(p, res)
+        self.assertTrue(self.dicts_are_equal_for_common_keys(res, exp, diff=True))
     
     def test_restore_defaults(self):
         a = Main_window()
@@ -103,7 +107,7 @@ class Test_browse_files(unittest.TestCase):
             p.assert_called_once()
             p.reset_mock()
             self.assertEqual(a.micrographsBox.text(), '')
-            QTest.mouseClick(a.templatesBrowseButton, Qt.LeftButton)
+            QTest.mouseClick(a.templateBrowseButton, Qt.LeftButton)
             p.assert_called_once()
             self.assertEqual(a.templatesBox.text(), '')
         
@@ -116,7 +120,7 @@ class Test_browse_files(unittest.TestCase):
     def test_browse_templates_creates_popup(self):
         a = Main_window()
         with patch('PySide2.QtWidgets.QFileDialog.show') as p:
-            QTest.mouseClick(a.templatesBrowseButton, Qt.LeftButton)
+            QTest.mouseClick(a.templateBrowseButton, Qt.LeftButton)
             p.assert_called_once()
     
     def test_browse_micrographs_updates_micrographsBox(self):
@@ -134,7 +138,7 @@ class Test_browse_files(unittest.TestCase):
         a = Main_window()
         import inspect
         test_file = inspect.getfile(os)
-        QTest.mouseClick(a.templatesBrowseButton, Qt.LeftButton) #popup dialog
+        QTest.mouseClick(a.templateBrowseButton, Qt.LeftButton) #popup dialog
         a.browse_dialog.selectFile(test_file) #select a file
         QTest.keyClicks(a.browse_dialog, '\r') #return to close
         self.assertEqual(os.path.normpath(test_file).lower(),

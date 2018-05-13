@@ -10,7 +10,7 @@ from PySide2.QtCore import QFile, QObject, Signal, Slot
 from PySide2.QtGui import QPixmap
 
 from gautomatch_runner import Gautomatch_runner, InvalidParameter
-from ui_elements.uiMainWindow import Ui_MainWindow
+from ui_elements.uiMainWindow import Ui_Gautomatcher
 from ui_elements.micrograph_area import Micrograph_widget
 
 DEFAULT_PARAMETERS={'micrographs':'',
@@ -18,9 +18,24 @@ DEFAULT_PARAMETERS={'micrographs':'',
                     'apixM': 1.34,
                     'apixT': 1.34,
                     'diameter': 400,
-                    'T': 'NONE'}
+                    'T': 'NONE',
+                    'ang_step': 5,
+                    'speed': 2,
+                    'boxsize': 128,
+                    'min_dist': 300,
+                    'cc_cutoff': 0.1,
+                    'lsigma_cutoff': 1.2,
+                    'lsigmaD': 100,
+                    'lave_min': -1.0,
+                    'lave_max': 1.0,
+                    'lave_D': 400,
+                    'lp': 30,
+                    'hp': 1000,
+                    'pre_hp': 1000,
+                    'pre_lp': 8.0}
+DEFAULT_FLAGS = {'do_pre_filter': False}
 
-class Main_window( Ui_MainWindow, QMainWindow):
+class Main_window(Ui_Gautomatcher, QMainWindow):
     
     def __init__(self):
         super(Main_window, self).__init__()
@@ -29,13 +44,14 @@ class Main_window( Ui_MainWindow, QMainWindow):
         self.runButton = self.buttonBox.addButton(u'Run Gautomatch', 
                                                   QDialogButtonBox.ApplyRole)
         self.micrographsBrowseButton.clicked.connect(self.open_file_browser)
-        self.templatesBrowseButton.clicked.connect(self.open_file_browser)
+        self.templateBrowseButton.clicked.connect(self.open_file_browser)
         self.runButton.clicked.connect(self.run_gautomatch)
         self.buttonBox.rejected.connect(sys.exit)
         self.buttonBox.button(QDialogButtonBox.RestoreDefaults).clicked.connect(
             self.restore_defaults)
-        self.micrographWidget = Micrograph_widget()
-        self.micrographWidget.setParent(self)
+        self.set_parameters(DEFAULT_PARAMETERS)
+#         self.micrographWidget = Micrograph_widget()
+#         self.micrographWidget.setParent(self)
         
     def run_gautomatch(self):
         parameters = self.get_parameters()
@@ -47,23 +63,50 @@ class Main_window( Ui_MainWindow, QMainWindow):
             
     def get_parameters(self):
         parms = {}
-        parms['apixM'] = float(self.aPixMBox.value())
-        parms['apixT'] = float(self.aPixTBox.value())
-        parms['diameter'] = int(self.diameterBox.value())
         m = self.micrographsBox.text()
         parms['micrographs'] = os.path.normpath(m) if m else ''
         t = self.templatesBox.text()
         parms['templates'] = os.path.normpath(t) if t else ''
+        parms['apixM'] = float(self.aPixMBox.value())
+        parms['apixT'] = float(self.aPixTBox.value())
+        parms['diameter'] = int(self.diameterBox.value())
+        parms['ang_step'] = int(self.angStepBox.value())
+        parms['speed'] = int(self.speedBox.value())
+        parms['boxsize'] = int(self.boxSizeBox.value())
+        parms['min_dist'] = int(self.minDistanceBox.value())
+        parms['cc_cutoff'] = float(self.ccCutoffBox.value())
+        parms['lsigma_cutoff'] = float(self.localSigmaCutoffBox.value())
+        parms['lsigmaD'] = float(self.localSigmaDiameterBox.value())
+        parms['lave_min'] = float(self.localAverageMinBox.value())
+        parms['lave_max'] = float(self.localAverageMaxBox.value())
+        parms['lave_D'] = int(self.localAverageDiameterBox.value())
+        parms['lp'] = int(self.lowPassBox.value())
+        parms['hp'] = int(self.highPassBox.value())
+        parms['pre_hp'] = int(self.preHighPassBox.value())
+        parms['pre_lp'] = int(self.preLowPassBox.value())
         return parms
     
-    def set_parameters(self, parameters):
-        p=parameters
-        self.aPixMBox.setValue(p['apixM'])
-        self.aPixTBox.setValue(p['apixT'])
-        self.diameterBox.setValue(p['diameter'])
+    def set_parameters(self, parms):
+        self.aPixMBox.setValue(parms['apixM'])
+        self.aPixTBox.setValue(parms['apixT'])
+        self.diameterBox.setValue(parms['diameter'])
+        self.angStepBox.setValue(parms['ang_step'])
+        self.speedBox.setValue(parms['speed'])
+        self.boxSizeBox.setValue(parms['boxsize'])
+        self.minDistanceBox.setValue(parms['min_dist'])
+        self.ccCutoffBox.setValue(parms['cc_cutoff'])
+        self.localSigmaCutoffBox.setValue(parms['lsigma_cutoff'])
+        self.localSigmaDiameterBox.setValue(parms['lsigmaD'])
+        self.localAverageMinBox.setValue(parms['lave_min'])
+        self.localAverageMaxBox.setValue(parms['lave_max'])
+        self.localAverageDiameterBox.setValue(parms['lave_D'])
+        self.lowPassBox.setValue(parms['lp'])
+        self.highPassBox.setValue(parms['hp'])
+        self.preHighPassBox.setValue(parms['pre_hp'])
+        self.preLowPassBox.setValue(parms['pre_lp'])
         
     def open_file_browser(self):
-        if self.sender() == self.templatesBrowseButton:
+        if self.sender() == self.templateBrowseButton:
             target = self.templatesBox
             title = 'Open templates file'
             filters = 'Templates (*.mrc);;All files (*.*)'
