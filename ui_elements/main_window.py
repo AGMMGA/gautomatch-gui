@@ -11,11 +11,12 @@ from PySide2.QtGui import QPixmap
 
 from gautomatch_runner import Gautomatch_runner, InvalidParameter
 from ui_elements.uiMainWindow import Ui_MainWindow
+from ui_elements.micrograph_area import Micrograph_widget
 
 DEFAULT_PARAMETERS={'micrographs':'',
                     'templates':'',
                     'apixM': 1.34,
-                    'aPixT': 1.34,
+                    'apixT': 1.34,
                     'diameter': 400,
                     'T': 'NONE'}
 
@@ -25,10 +26,16 @@ class Main_window( Ui_MainWindow, QMainWindow):
         super(Main_window, self).__init__()
         self.setupUi(self)
         self.runner = Gautomatch_runner()
-        self.runButton = self.buttonBox.addButton(u'Run Gautomatch', QDialogButtonBox.ApplyRole)
+        self.runButton = self.buttonBox.addButton(u'Run Gautomatch', 
+                                                  QDialogButtonBox.ApplyRole)
         self.micrographsBrowseButton.clicked.connect(self.open_file_browser)
         self.templatesBrowseButton.clicked.connect(self.open_file_browser)
         self.runButton.clicked.connect(self.run_gautomatch)
+        self.buttonBox.rejected.connect(sys.exit)
+        self.buttonBox.button(QDialogButtonBox.RestoreDefaults).clicked.connect(
+            self.restore_defaults)
+        self.micrographWidget = Micrograph_widget()
+        self.micrographWidget.setParent(self)
         
     def run_gautomatch(self):
         parameters = self.get_parameters()
@@ -49,8 +56,13 @@ class Main_window( Ui_MainWindow, QMainWindow):
         parms['templates'] = os.path.normpath(t) if t else ''
         return parms
     
+    def set_parameters(self, parameters):
+        p=parameters
+        self.aPixMBox.setValue(p['apixM'])
+        self.aPixTBox.setValue(p['apixT'])
+        self.diameterBox.setValue(p['diameter'])
+        
     def open_file_browser(self):
-        print('dicked')
         if self.sender() == self.templatesBrowseButton:
             target = self.templatesBox
             title = 'Open templates file'
@@ -87,16 +99,20 @@ class Main_window( Ui_MainWindow, QMainWindow):
     def alert_user(self, exception):
         self.alert = QMessageBox()
         self.alert.setText(str(exception))
+        self.alert.setWindowTitle(exception.window_title)
         if exception.informative_text:
             self.alert.setInformativeText(exception.informative_text)
         #TODO: fix the annoying beeping issue
         #self.alert.setIcon(QMessageBox.Warning) disabled because stupid beeping
         self.alert.show()
+    
+    def restore_defaults(self):
+        self.set_parameters(DEFAULT_PARAMETERS)
         
+    
     
 def main():
     app = QApplication(sys.argv)
-    
     a = Main_window()
     a.show()
     sys.exit(app.exec_())

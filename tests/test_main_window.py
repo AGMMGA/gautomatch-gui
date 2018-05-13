@@ -3,19 +3,17 @@ import sys
 import unittest
 
 from unittest.mock import patch
-from PySide2.QtWidgets import QApplication, QFileDialog
+from PySide2.QtWidgets import QApplication, QFileDialog, QDialogButtonBox
 from PySide2.QtTest import QTest
 from PySide2.QtCore import Qt
 
 from ui_elements.main_window import Main_window, DEFAULT_PARAMETERS
-from gautomatch_runner import (MicrographNotFound, NoMicrographsChosen,
-                               TemplateNotFound)
 
 
-class Test_get_parameters(unittest.TestCase):
+class Test_get_and_set_parameters(unittest.TestCase):
     
     def __init__(self, *args, **kwargs):
-        super(Test_get_parameters, self).__init__(*args, **kwargs)
+        super(Test_get_and_set_parameters, self).__init__(*args, **kwargs)
     
     def setUp(self):
         try:
@@ -51,6 +49,40 @@ class Test_get_parameters(unittest.TestCase):
                'micrographs' : '',
                'templates' : ''}
         self.assertEqual(res, exp)
+        
+    def test_set_parameters(self):
+        a = Main_window()
+        p = DEFAULT_PARAMETERS.copy()
+        a.set_parameters(p)
+        res = a.get_parameters()
+        for k in p.copy().keys():
+            if k not in res:
+                del p[k]
+        assert(p.keys() == res.keys())
+        self.assertEqual(p, res)
+    
+    def test_restore_defaults(self):
+        a = Main_window()
+        p = DEFAULT_PARAMETERS.copy()
+        a.restore_defaults()
+        res = a.get_parameters()
+        for k in p.copy().keys():
+            if k not in res:
+                del p[k]
+        assert(p.keys() == res.keys())
+        self.assertEqual(p, res)
+        
+    def test_restore_defaults_key(self):
+        a = Main_window()
+        p = DEFAULT_PARAMETERS.copy()
+        QTest.mouseClick(a.buttonBox.button(QDialogButtonBox.RestoreDefaults),
+                         Qt.LeftButton)
+        res = a.get_parameters()
+        for k in p.copy().keys():
+            if k not in res:
+                del p[k]
+        assert(p.keys() == res.keys())
+        self.assertEqual(p, res)
         
         
 class Test_browse_files(unittest.TestCase):
@@ -120,8 +152,9 @@ class Test_run_gautomatch(unittest.TestCase):
             pass
     
     def test_alerts_on_invalid_parameter(self):
+        #using NoMicrographsChosen as a representative of InvalidParameter
         a = Main_window()
         with patch('ui_elements.main_window.Main_window.alert_user') as p:
             QTest.mouseClick(a.runButton, Qt.LeftButton) #will trigger no micrographs selected
-            p.assert_called_with(NoMicrographsChosen)
+            p.assert_called_with()
                 
