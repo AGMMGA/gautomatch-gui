@@ -21,6 +21,31 @@ class Test_get_and_set_parameters(unittest.TestCase):
         except RuntimeError:
             pass
     
+    #helper function to compare two dictionaries only regarding the keys they have in common
+    def dicts_are_equal_for_common_keys(self, dict1, dict2, diff=False):
+        all_keys = set([k for k in dict1.keys()] + \
+                    [k for k in dict2.keys()])
+        common_keys = [k for k in all_keys 
+                       if k in dict1.keys()
+                       if k in dict2.keys()]
+        equal = [k for k in common_keys if dict1[k] == dict2[k]]
+        different = [k for k in common_keys if dict1[k] != dict2[k]]
+        if not different:
+            return True
+        elif different and diff:
+            for k in different:
+                print (f'Key: {k}. Dict1 = {dict1[k]} != Dict2 = {dict2[k]}')
+                return False
+    
+    def test_helper_function(self):
+        a= {'a':1, 'b':1}
+        b= {'a':1, 'b':1}
+        self.assertTrue(self.dicts_are_equal_for_common_keys(a, b))
+        b['c'] = 2
+        self.assertTrue(self.dicts_are_equal_for_common_keys(a, b))
+        b['a'] = 2
+        self.assertFalse(self.dicts_are_equal_for_common_keys(a, b))
+    
     def test_setting_on_GUI(self):
         a = Main_window()
         a.aPixMBox.setValue(2.01)
@@ -36,22 +61,7 @@ class Test_get_and_set_parameters(unittest.TestCase):
         exp['templates'] = os.getcwd()
         res = a.get_parameters()
         self.assertTrue(self.dicts_are_equal_for_common_keys(res, exp, diff=True))
-    
-    def dicts_are_equal_for_common_keys(self, dict1, dict2, diff=False):
-        all_keys = set([k for k in dict1.keys()] + \
-                    [k for k in dict2.keys()])
-        common_keys = [k for k in all_keys 
-                       if k in dict1.keys()
-                       if k in dict2.keys()]
-        equal = [k for k in common_keys if dict1[k] == dict2[k]]
-        different = [k for k in common_keys if dict1[k] != dict2[k]]
-        if not different:
-            return True
-        elif different and diff:
-            for k in different:
-                print (f'Key: {k}. Dict1 = {dict1[k]} != Dict2 = {dict2[k]}')
-                return False
-        
+      
     def test_default_state(self):
         a = Main_window()
         res = a.get_parameters()
