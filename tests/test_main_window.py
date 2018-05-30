@@ -20,9 +20,13 @@ class Test_get_and_set_parameters(unittest.TestCase):
             self.app = QApplication(sys.argv)
         except RuntimeError:
             pass
-    
-    #helper function to compare two dictionaries only regarding the keys they have in common
+
     def dicts_are_equal_for_common_keys(self, dict1, dict2, diff=False):
+        '''
+        helper function to compare two dictionaries only for the keys they have in common
+        >>> a= {'a':1, 'b':1, 'c': 1},  b= {'a':1, 'b':1} -> True
+        >>> a= {'a':1, 'b':1, 'c': 1},  b= {'a':2, 'b':1} -> False
+        '''
         all_keys = set([k for k in dict1.keys()] + \
                     [k for k in dict2.keys()])
         common_keys = [k for k in all_keys 
