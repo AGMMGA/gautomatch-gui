@@ -2,4 +2,5 @@ eclipse.preferences.version=1
 encoding//ui_elements/main_window.py=utf-8
 encoding//ui_elements/micrograph_area.py=utf-8
 encoding//ui_elements/uiMainWindow.py=utf-8
+encoding//ui_elements/uiMicrographArea.py=utf-8
 encoding/gautomatch_runner.py=utf-8

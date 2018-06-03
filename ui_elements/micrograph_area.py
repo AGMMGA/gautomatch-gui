@@ -64,8 +64,8 @@ class Micrograph_loader(object):
 
 class Micrograph_widget(Ui_micrographWidget, QLabel):
     
-    def __init__(self):
-        super().__init__()
+    def __init__(self, parent=None):
+        super().__init__(parent)
         super().setupUi(self)
         self.mic_loader = Micrograph_loader() #loads with placeholder image at init
         self.display_image(self.mic_loader.get_current_mic())
