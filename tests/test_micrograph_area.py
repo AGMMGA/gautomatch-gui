@@ -3,7 +3,10 @@ import sys
 import unittest
 from unittest.mock import MagicMock, patch
 
-from ui_elements.micrograph_area import Micrograph_loader, PLACEHOLDER_IMAGE
+from PySide2.QtWidgets import QApplication
+
+from ui_elements.micrograph_area import (Micrograph_loader, PLACEHOLDER_IMAGE,
+                                         Micrograph_widget) 
 
 class Test_micrograph_cycling(unittest.TestCase):
     
@@ -59,6 +62,57 @@ class Test_micrograph_cycling(unittest.TestCase):
         l = Micrograph_loader()
         with self.assertRaises(OSError):
             l.load_image_batch(['notexisting', 'notanimage.tif'])
+
+class test_micrograph_control_buttons(unittest.TestCase):
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        
+    def setUp(self):
+        try:
+            self.app = QApplication(sys.argv)
+        except RuntimeError:
+            pass
+
+    def test_prev_next_buttons_grayed_out_on_empty_init(self):
+        '''
+        Checks that previous and next buttons on micrograph widget are disabled if
+        placeholder image is loaded on empty init
+        '''
+        l = Micrograph_widget()
+        assert len(l.mic_loader.cached_mics) == 1
+        self.assertFalse(l.nextButton.isEnabled())
+        self.assertFalse(l.previousButton.isEnabled())
+        
+    def test_prev_next_buttons_grayed_out_on_single_mic_init(self):
+        '''
+        Checks that previous and next buttons on micrograph widget are disabled if
+        a single image is loaded
+        '''
+        l = Micrograph_widget(os.path.abspath('static/test1.tif'))
+        assert len(l.mic_loader.cached_mics) == 1
+        self.assertFalse(l.nextButton.isEnabled())
+        self.assertFalse(l.previousButton.isEnabled())
+        
+    def test_prev_next_buttons_are_enabled_on_mic_list_init(self):
+        mics = [os.path.abspath('static/test1.tif'),
+                os.path.abspath('static/test2.tif')]
+        l = Micrograph_widget()
+        l.load_new_images(mics)
+        assert len(l.mic_loader.cached_mics) == 2
+        self.assertTrue(l.nextButton.isEnabled())
+        self.assertTrue(l.previousButton.isEnabled())
+        
+    def test_prev_next_buttons_are_disabled_again_on_mic_reload(self):
+        mics = [os.path.abspath('static/test1.tif'),
+                os.path.abspath('static/test2.tif')]
+        l = Micrograph_widget(mics)
+        l.load_new_images([os.path.abspath('static/test1.tif')])
+        assert len(l.mic_loader.cached_mics) == 1
+        self.assertFalse(l.nextButton.isEnabled())
+        self.assertFalse(l.previousButton.isEnabled())
+        
+        
         
         
     

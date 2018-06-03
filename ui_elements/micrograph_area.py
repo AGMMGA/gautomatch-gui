@@ -54,9 +54,11 @@ class Micrograph_loader(object):
         Loads a new batch of images and returns the first in the list.
         Expects a list of paths to valid images
         '''
+        if not isinstance(images, list): #debug
+            raise ValueError('Please pass a list of images to load, even for single image')
         for img in images:
             if not os.path.isfile(img):
-                raise OSError
+                raise OSError(f'File {img} not found')
         self.cached_mics = images
         self.current_mic_index = 0
         return self.cached_mics[self.current_mic_index]
@@ -65,7 +67,7 @@ class Micrograph_loader(object):
 class Micrograph_widget(Ui_micrographWidget, QLabel):
     
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(parent=None)
         super().setupUi(self)
         self.mic_loader = Micrograph_loader() #loads with placeholder image at init
         self.display_image(self.mic_loader.get_current_mic())
@@ -81,6 +83,10 @@ class Micrograph_widget(Ui_micrographWidget, QLabel):
         self.nextButton.clicked.connect(self.show_next_micrograph)
         self.previousPickButton.clicked.connect(self.show_previous_pick)
         self.currentPickButton.clicked.connect(self.show_current_pick)
+        # if the object is initialized empty (no micrographs), we gray out the buttons
+        if len(self.mic_loader.cached_mics) == 1:
+            self.buttonBox.setEnabled(False)
+        
         
     def display_image(self, qpixmap):
         self.micrographLabel.setPixmap(qpixmap)
@@ -94,8 +100,16 @@ class Micrograph_widget(Ui_micrographWidget, QLabel):
         self.display_image(img)
     
     def load_new_images(self, images):
+        if not images: #debug
+            raise ValueError('I need a list of images to load')
         self.mic_loader.load_image_batch(images)
         self.display_image(self.mic_loader.get_current_mic())
+        if len(self.mic_loader.cached_mics) == 1:
+            self.previousButton.setEnabled(False)
+            self.nextButton.setEnabled(False)
+        elif len(self.mic_loader.cached_mics) > 1:
+#             self.previousButton.setEnabled(True) for whatever reason does not work
+            self.buttonBox.setEnabled(True) #cascade enables all children. This works.
     
     def show_previous_pick(self):
         print('previous_pick')
